@@ -23,7 +23,7 @@ namespace PostService.Controllers
         [HttpGet]
         public async Task<ActionResult<IEnumerable<Post>>> GetPost()
         {
-            return await _context.Posts.ToListAsync();
+            return await _context.Posts.Include(x => x.User).ToListAsync();
         }
 
         [HttpPost]

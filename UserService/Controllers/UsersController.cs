@@ -69,7 +69,7 @@ namespace UserService.Controllers
             });
         }
 
-        private void PublishToMessageQueue(string integrationEvent, string eventData)
+        private static void PublishToMessageQueue(string integrationEvent, string eventData)
         {
             var factory = new ConnectionFactory();
             using var connection = factory.CreateConnection();
