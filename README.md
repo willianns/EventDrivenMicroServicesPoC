@@ -1,6 +1,6 @@
 # Event-Driven Microservice Sample
 
-Proof of concept using **RabbitMQ** for asynchronous communication and eventual consistency using integration events storing data each service on your own database.
+Proof of concept using **RabbitMQ** for asynchronous communication and eventual consistency using integration events storing data each service on your own database and using outbox pattern 
 > The sample is not intended for production use due to lack of other mechanisms needed to enforce resiliency, security, and best practices.
 
 The samples is based on itnext.io post referenced at the end. The solution contains two microservices as PostService and UserService. Firing a command to create an user will raise an event consumed by PostService.
@@ -31,3 +31,4 @@ To run this sample you need:
 
 ## Reference
 https://itnext.io/how-to-build-an-event-driven-asp-net-core-microservice-architecture-e0ef2976f33f
+https://itnext.io/the-outbox-pattern-in-event-driven-asp-net-core-microservice-architectures-10b8d9923885

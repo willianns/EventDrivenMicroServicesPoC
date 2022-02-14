@@ -23,17 +23,22 @@ namespace PostService
             CreateHostBuilder(args).Build().Run();
         }
 
+        private static IModel _channel;
+
         private static void ListenForEvents()
         {
+            //improvements that can be made
+            // * move consumer and acknowledgment to BackgroundService
+
             var factory = new ConnectionFactory();
             var connection = factory.CreateConnection();
-            var channel = connection.CreateModel();
-            var consumer = new EventingBasicConsumer(channel);
+            _channel = connection.CreateModel();
+            var consumer = new EventingBasicConsumer(_channel);
 
             consumer.Received += Consumer_Received;
 
-            channel.BasicConsume(queue: "user.postservice",
-                                 autoAck: true,
+            _channel.BasicConsume(queue: "user.postservice",
+                                 autoAck: false,
                                  consumer: consumer);
         }
 
@@ -53,19 +58,37 @@ namespace PostService
             var type = e.RoutingKey;
             if (type == "user.add")
             {
-                dbContext.Users.Add(new Entities.User()
+                if (dbContext.Users.Any(a => a.ID == data["id"].Value<int>()))
                 {
-                    ID = data["id"].Value<int>(),
-                    Name = data["name"].Value<string>()
-                });
-                dbContext.SaveChanges();
+                    Console.WriteLine("Ignoring old/duplicate entity");
+                }
+                else
+                {
+                    dbContext.Users.Add(new Entities.User()
+                    {
+                        ID = data["id"].Value<int>(),
+                        Name = data["name"].Value<string>(),
+                        Version = data["version"].Value<int>(),
+                    });
+                    dbContext.SaveChanges();
+                }
             }
             else if (type == "user.update")
             {
+                int newVersion = data["version"].Value<int>();
                 var user = dbContext.Users.First(a => a.ID == data["id"].Value<int>());
-                user.Name = data["name"].Value<string>();
-                dbContext.SaveChanges();
+                if (user.Version >= newVersion)
+                {
+                    Console.WriteLine("Ignoring old/duplicate entity");
+                }
+                else
+                {
+                    user.Name = data["name"].Value<string>();
+                    user.Version = newVersion;
+                    dbContext.SaveChanges();
+                }
             }
+            _channel.BasicAck(e.DeliveryTag, false);
         }
 
         public static IHostBuilder CreateHostBuilder(string[] args) =>

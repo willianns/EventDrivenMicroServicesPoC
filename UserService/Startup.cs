@@ -12,6 +12,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using UserService.BackgroundServices;
 using UserService.Data;
 
 namespace UserService
@@ -37,6 +38,9 @@ namespace UserService
 
             services.AddDbContext<UserServiceContext>(options =>
                 options.UseSqlite(@"Data Source=user.db"));
+
+            services.AddSingleton<IntegrationEventSenderService>();
+            services.AddHostedService(provider => provider.GetService<IntegrationEventSenderService>());
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
